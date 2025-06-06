@@ -1,2 +1,8 @@
 streamlit
 pandas
+streamlit-calendar
+openpyxl
+folium
+os
+geopy
+time
