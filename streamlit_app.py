@@ -1,6 +1,6 @@
 # pip install streamlit-calendar
 # pip install openpyxl
-# streamlit run app.py
+# streamlit run streamlit_app.py
 import streamlit as st
 from streamlit_calendar import calendar
 # from streamlit_folium import st_folium
