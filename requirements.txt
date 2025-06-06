@@ -4,4 +4,3 @@ streamlit-calendar
 openpyxl
 folium
 geopy
- 
