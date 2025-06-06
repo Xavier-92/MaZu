@@ -355,7 +355,6 @@ elif page == "打卡" and st.session_state.role == "punch":
     with st.form("punch_form", clear_on_submit=True):
         rfid = st.text_input("RFID Tag 編號", key="rfid_input")
         submitted = st.form_submit_button("輸入")
-        username = st.session_state.get("username", "")
 
         if rfid:
             import datetime
@@ -363,18 +362,35 @@ elif page == "打卡" and st.session_state.role == "punch":
             tz = pytz.timezone("Asia/Taipei")
             now = datetime.datetime.now(tz)
             punch_file = "punch_records.xlsx"
-            if os.path.exists(punch_file):
-                punch_df = pd.read_excel(punch_file)
+            info_file = "分靈資訊.xlsx"
+
+            # 讀取分靈資訊，查找會員卡號對應帳號
+            if os.path.exists(info_file):
+                info_df = pd.read_excel(info_file)
+                if "會員卡號" in info_df.columns:
+                    user_row = info_df[info_df["會員卡號"].astype(str) == str(rfid)]
+                    if not user_row.empty:
+                        username = user_row.iloc[0]["帳號"]
+                    else:
+                        username = ""
+                else:
+                    username = ""
             else:
-                punch_df = pd.DataFrame(columns=["帳號", "RFID Tag", "打卡時間"])
-            punch_df = pd.concat([
-                punch_df,
-                pd.DataFrame([[st.session_state.get("username", ""), rfid, now.strftime("%Y-%m-%d %H:%M:%S")]], columns=punch_df.columns)
-            ], ignore_index=True)
-            punch_df.to_excel(punch_file, index=False)
-            st.success(f"✅ 打卡成功！帳號：{st.session_state.get('username', '')}，RFID Tag：{rfid}，時間：{now.strftime('%Y-%m-%d %H:%M:%S')}")
-            
-            # st.rerun()
+                username = ""
+
+            if username:
+                if os.path.exists(punch_file):
+                    punch_df = pd.read_excel(punch_file)
+                else:
+                    punch_df = pd.DataFrame(columns=["帳號", "RFID Tag", "打卡時間"])
+                punch_df = pd.concat([
+                    punch_df,
+                    pd.DataFrame([[username, rfid, now.strftime("%Y-%m-%d %H:%M:%S")]], columns=punch_df.columns)
+                ], ignore_index=True)
+                punch_df.to_excel(punch_file, index=False)
+                st.success(f"✅ 打卡成功！帳號：{username}，RFID Tag：{rfid}，時間：{now.strftime('%Y-%m-%d %H:%M:%S')}")
+            else:
+                st.warning("⚠️ 查無此 RFID Tag 對應的帳號，請確認卡號是否正確！")
         else:
             st.warning("⚠️ 請先感應 RFID Tag！")
         
