@@ -1,8 +1,9 @@
 import requests
+import streamlit as st
 import os
 
 def get_coordinates(address):
-    api_key = "AIzaSyBPO7RWvNTLaz2mHxveWC8PtnPqOR237bc"  # Replace with your actual API key
+    api_key = st.secrets["google"]["api_key"]
     url = f"https://maps.googleapis.com/maps/api/geocode/json?address={address}&key={api_key}"
     response = requests.get(url)
     if response.status_code == 200:
