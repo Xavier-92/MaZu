@@ -295,7 +295,8 @@ def pages():
                 if os.path.exists(info_file):
                     info_df = pd.read_excel(info_file)
                     if "會員卡號" in info_df.columns:
-                        user_row = info_df[info_df["會員卡號"].astype(str) == str(rfid)]
+                        info_df["會員卡號"] = info_df["會員卡號"].astype(str)
+                        user_row = info_df[info_df["會員卡號"] == str(rfid)]
                         if not user_row.empty:
                             username = user_row.iloc[0]["帳號"]
                         else:
