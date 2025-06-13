@@ -336,14 +336,15 @@ def pages():
 
         # Page for adding spiritual information
         st.header("➕ 新增分靈資訊")
-        username = st.session_state.get("username", "")
         col1, col2 = st.columns(2)
         with col1:
+            account_input = st.text_input("帳號")
             name = st.text_input("宮廟名稱")
             contact = st.text_input("聯絡人")
         with col2:
             phone = st.text_input("聯絡電話")
             address = st.text_input("地址")
+            password_input = st.text_input("密碼 ", type="password")
         note = st.text_area("備註", height=100)
 
         # Read Excel file
@@ -355,18 +356,28 @@ def pages():
         # User role handling
         if st.session_state.role == "admin":
             if st.button("儲存"):
-                if name and contact:
+                if account_input and name and contact and password_input:
                     lat, lon = get_coordinates(address)
                     new_data = pd.DataFrame(
-                        [[username, name, contact, phone, address, note, lat, lon]],
+                        [[account_input, name, contact, phone, address, note, lat, lon]],
                         columns=["帳號", "宮廟名稱", "聯絡人", "聯絡電話", "地址", "備註", "緯度", "經度"]
                     )
                     df = pd.concat([df, new_data], ignore_index=True)
                     df.to_excel(EXCEL_FILE, index=False)
-                    st.success("✅ 資料已儲存！")
+                    # 新增帳號到 accounts.xlsx
+                    ACCOUNTS_FILE = "accounts.xlsx"
+                    if os.path.exists(ACCOUNTS_FILE):
+                        acc_df = pd.read_excel(ACCOUNTS_FILE)
+                    else:
+                        acc_df = pd.DataFrame(columns=["帳號", "密碼", "角色"])
+                    if not (acc_df["帳號"] == account_input).any():
+                        new_acc = pd.DataFrame([[account_input, password_input, "user"]], columns=["帳號", "密碼", "角色"])
+                        acc_df = pd.concat([acc_df, new_acc], ignore_index=True)
+                        acc_df.to_excel(ACCOUNTS_FILE, index=False)
+                    st.success("✅ 分靈資訊與帳號已儲存！")
                     st.rerun()
                 else:
-                    st.warning("⚠️ 宮廟名稱與聯絡人為必填欄位！")
+                    st.warning("⚠️ 帳號、密碼、宮廟名稱與聯絡人為必填欄位！")
         else:
             already_exists = (df["帳號"] == username).any()
             if st.button("儲存"):
