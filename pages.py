@@ -336,16 +336,27 @@ def pages():
 
         # Page for adding spiritual information
         st.header("➕ 新增分靈資訊")
-        col1, col2 = st.columns(2)
-        with col1:
-            account_input = st.text_input("帳號")
-            name = st.text_input("宮廟名稱")
-            contact = st.text_input("聯絡人")
-        with col2:
-            phone = st.text_input("聯絡電話")
-            address = st.text_input("地址")
-            password_input = st.text_input("密碼 ", type="password")
-        note = st.text_area("備註", height=100)
+        if st.session_state.role == "admin":
+            col1, col2 = st.columns(2)
+            with col1:
+                account_input = st.text_input("帳號")
+                name = st.text_input("宮廟名稱")
+                contact = st.text_input("聯絡人")
+            with col2:
+                phone = st.text_input("聯絡電話")
+                address = st.text_input("地址")
+                password_input = st.text_input("密碼", type="password")
+            note = st.text_area("備註", height=100)
+        else:
+            username = st.session_state.get("username", "")
+            col1, col2 = st.columns(2)
+            with col1:
+                name = st.text_input("宮廟名稱")
+                contact = st.text_input("聯絡人")
+            with col2:
+                phone = st.text_input("聯絡電話")
+                address = st.text_input("地址")
+            note = st.text_area("備註", height=100)
 
         # Read Excel file
         if os.path.exists(EXCEL_FILE):
