@@ -60,8 +60,8 @@ if not st.session_state.logged_in:
             else:
                 # 一般帳號從 accounts.xlsx 讀取
                 if os.path.exists(ACCOUNTS_FILE):
-                    acc_df = pd.read_excel(ACCOUNTS_FILE)
-                    user_row = acc_df[(acc_df["帳號"] == username) & (acc_df["密碼"] == password)]
+                    acc_df = pd.read_excel(ACCOUNTS_FILE, dtype={"帳號": str})
+                    user_row = acc_df[(acc_df["帳號"] == str(username)) & (acc_df["密碼"] == password)]
                     if not user_row.empty:
                         st.session_state.logged_in = True
                         st.session_state.role = user_row.iloc[0]["角色"]
@@ -86,7 +86,7 @@ if not st.session_state.logged_in:
         if st.button("送出申請"):
             if apply_user and apply_pw and apply_contact:
                 if os.path.exists(APPLY_FILE):
-                    apply_df = pd.read_excel(APPLY_FILE)
+                    apply_df = pd.read_excel(APPLY_FILE, dtype={"帳號": str})
                 else:
                     apply_df = pd.DataFrame(columns=["帳號", "密碼", "聯絡人", "電話", "狀態"])
                 # 檢查是否重複申請
@@ -95,8 +95,9 @@ if not st.session_state.logged_in:
                 else:
                     apply_df = pd.concat([
                         apply_df,
-                        pd.DataFrame([[apply_user, apply_pw, apply_contact, apply_phone, "待審核"]], columns=apply_df.columns)
+                        pd.DataFrame([[str(apply_user), apply_pw, apply_contact, apply_phone, "待審核"]], columns=apply_df.columns)
                     ], ignore_index=True)
+                    apply_df["帳號"] = apply_df["帳號"].astype(str)
                     apply_df.to_excel(APPLY_FILE, index=False)
                     st.success("申請已送出，請等待管理員審核！")
                     st.session_state.show_apply = False
