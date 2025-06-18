@@ -205,7 +205,8 @@ def pages():
             current_card = str(df.iloc[edit_idx]["會員卡號"]) if "會員卡號" in df.columns else ""
             new_card = st.text_input("會員卡號", value=current_card, key=f"edit_card_{edit_idx}")
             if st.button("儲存會員卡號", key=f"save_card_{edit_idx}"):
-                df.at[edit_idx, "會員卡號"] = new_card
+                df.at[edit_idx, "會員卡號"] = str(new_card)
+                df["會員卡號"] = df["會員卡號"].astype(str)
                 df.to_excel(EXCEL_FILE, index=False)
                 st.success(f"已更新第 {edit_idx} 列會員卡號！")
                 st.rerun()
@@ -293,7 +294,7 @@ def pages():
 
                 # 讀取分靈資訊，查找會員卡號對應帳號
                 if os.path.exists(info_file):
-                    info_df = pd.read_excel(info_file)
+                    info_df = pd.read_excel(info_file, dtype={"會員卡號": str})
                     if "會員卡號" in info_df.columns:
                         info_df["會員卡號"] = info_df["會員卡號"].astype(str)
                         user_row = info_df[info_df["會員卡號"] == str(rfid)]
@@ -313,8 +314,9 @@ def pages():
                         punch_df = pd.DataFrame(columns=["帳號", "RFID Tag", "打卡時間"])
                     punch_df = pd.concat([
                         punch_df,
-                        pd.DataFrame([[username, rfid, now.strftime("%Y-%m-%d %H:%M:%S")]], columns=punch_df.columns)
+                        pd.DataFrame([[username, str(rfid), now.strftime("%Y-%m-%d %H:%M:%S")]], columns=punch_df.columns)
                     ], ignore_index=True)
+                    punch_df["RFID Tag"] = punch_df["RFID Tag"].astype(str)
                     punch_df.to_excel(punch_file, index=False)
                     st.success(f"✅ 打卡成功！帳號：{username}，RFID Tag：{rfid}，時間：{now.strftime('%Y-%m-%d %H:%M:%S')}")
                 else:
@@ -361,9 +363,9 @@ def pages():
 
         # Read Excel file
         if os.path.exists(EXCEL_FILE):
-            df = pd.read_excel(EXCEL_FILE)
+            df = pd.read_excel(EXCEL_FILE, dtype={"會員卡號": str})
         else:
-            df = pd.DataFrame(columns=["帳號", "宮廟名稱", "聯絡人", "聯絡電話", "地址", "備註", "緯度", "經度"])
+            df = pd.DataFrame(columns=["帳號", "宮廟名稱", "聯絡人", "聯絡電話", "地址", "備註", "緯度", "經度", "會員卡號"])
 
         # User role handling
         if st.session_state.role == "admin":
