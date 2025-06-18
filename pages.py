@@ -389,7 +389,6 @@ def pages():
                         acc_df = pd.concat([acc_df, new_acc], ignore_index=True)
                         acc_df.to_excel(ACCOUNTS_FILE, index=False)
                     st.success("✅ 分靈資訊與帳號已儲存！")
-                    st.rerun()
                 else:
                     st.warning("⚠️ 帳號、密碼、宮廟名稱與聯絡人為必填欄位！")
         else:
