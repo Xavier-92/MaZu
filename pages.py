@@ -184,7 +184,11 @@ def pages():
         st.subheader("🔍 查詢分靈資訊")
         search_term = st.text_input("請輸入關鍵字（宮廟名稱、聯絡人、地址）")
 
-        df = pd.read_excel(EXCEL_FILE) if os.path.exists(EXCEL_FILE) else pd.DataFrame(columns=["帳號", "宮廟名稱", "聯絡人", "聯絡電話", "地址", "備註", "緯度", "經度"])
+        # 讀取時強制會員卡號為字串
+        df = pd.read_excel(EXCEL_FILE, dtype={"會員卡號": str}) if os.path.exists(EXCEL_FILE) else pd.DataFrame(columns=["帳號", "宮廟名稱", "聯絡人", "聯絡電話", "地址", "備註", "緯度", "經度", "會員卡號"])
+        if "會員卡號" not in df.columns:
+            df["會員卡號"] = ""
+        df["會員卡號"] = df["會員卡號"].astype(str)
         if search_term:
             filtered_df = df[df.apply(lambda row: search_term.lower() in str(row["宮廟名稱"]).lower()
                                                     or search_term.lower() in str(row["聯絡人"]).lower()
@@ -199,10 +203,7 @@ def pages():
         st.subheader("🗝️ 編輯會員卡號")
         if len(df) > 0:
             edit_idx = st.number_input("請輸入要編輯的資料列編號（從 0 開始）", min_value=0, max_value=len(df)-1, step=1, key="edit_card_idx")
-            # 若尚未有會員卡號欄，則補上
-            if "會員卡號" not in df.columns:
-                df["會員卡號"] = ""
-            current_card = str(df.iloc[edit_idx]["會員卡號"]) if "會員卡號" in df.columns else ""
+            current_card = str(df.iloc[edit_idx]["會員卡號"])
             new_card = st.text_input("會員卡號", value=current_card, key=f"edit_card_{edit_idx}")
             if st.button("儲存會員卡號", key=f"save_card_{edit_idx}"):
                 df.at[edit_idx, "會員卡號"] = str(new_card)
@@ -309,7 +310,8 @@ def pages():
 
                 if username:
                     if os.path.exists(punch_file):
-                        punch_df = pd.read_excel(punch_file)
+                        punch_df = pd.read_excel(punch_file, dtype={"RFID Tag": str})
+                        punch_df["RFID Tag"] = punch_df["RFID Tag"].astype(str)
                     else:
                         punch_df = pd.DataFrame(columns=["帳號", "RFID Tag", "打卡時間"])
                     punch_df = pd.concat([
@@ -364,6 +366,9 @@ def pages():
         # Read Excel file
         if os.path.exists(EXCEL_FILE):
             df = pd.read_excel(EXCEL_FILE, dtype={"會員卡號": str})
+            if "會員卡號" not in df.columns:
+                df["會員卡號"] = ""
+            df["會員卡號"] = df["會員卡號"].astype(str)
         else:
             df = pd.DataFrame(columns=["帳號", "宮廟名稱", "聯絡人", "聯絡電話", "地址", "備註", "緯度", "經度", "會員卡號"])
 
@@ -373,10 +378,11 @@ def pages():
                 if account_input and name and contact and password_input:
                     lat, lon = get_coordinates(address)
                     new_data = pd.DataFrame(
-                        [[account_input, name, contact, phone, address, note, lat, lon]],
-                        columns=["帳號", "宮廟名稱", "聯絡人", "聯絡電話", "地址", "備註", "緯度", "經度"]
+                        [[account_input, name, contact, phone, address, note, lat, lon, ""]],
+                        columns=["帳號", "宮廟名稱", "聯絡人", "聯絡電話", "地址", "備註", "緯度", "經度", "會員卡號"]
                     )
                     df = pd.concat([df, new_data], ignore_index=True)
+                    df["會員卡號"] = df["會員卡號"].astype(str)
                     df.to_excel(EXCEL_FILE, index=False)
                     # 新增帳號到 accounts.xlsx
                     ACCOUNTS_FILE = "accounts.xlsx"
@@ -398,8 +404,9 @@ def pages():
                     st.warning("⚠️ 您已新增過資料，無法重複輸入。")
                 elif name and contact:
                     lat, lon = get_coordinates(address)
-                    new_data = pd.DataFrame([[username, name, contact, phone, address, note, lat, lon]], columns=["帳號", "宮廟名稱", "聯絡人", "聯絡電話", "地址", "備註", "緯度", "經度"])
+                    new_data = pd.DataFrame([[username, name, contact, phone, address, note, lat, lon, ""]], columns=["帳號", "宮廟名稱", "聯絡人", "聯絡電話", "地址", "備註", "緯度", "經度", "會員卡號"])
                     df = pd.concat([df, new_data], ignore_index=True)
+                    df["會員卡號"] = df["會員卡號"].astype(str)
                     df.to_excel(EXCEL_FILE, index=False)
                     st.success("✅ 資料已儲存！")
                 else:
